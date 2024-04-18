@@ -1,0 +1,43 @@
+name: Trigger auto deployment for ia43-rg05-contapps
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/ia43-rg05-contapps-AutoDeployTrigger-3e9084ee-bfdf-4004-99e4-cf7926066b57.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.IA43RG05CONTAPPS_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: ia43rg05acr01.azurecr.io
+          registryUsername: ${{ secrets.IA43RG05CONTAPPS_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.IA43RG05CONTAPPS_REGISTRY_PASSWORD }}
+          containerAppName: ia43-rg05-contapps
+          resourceGroup: IA43-RG05
+          imageToBuild: ia43rg05acr01.azurecr.io/ia43-rg05-contapps:${{ github.sha }}
+          
+            
+
+     
+
